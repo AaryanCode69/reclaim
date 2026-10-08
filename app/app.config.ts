@@ -27,6 +27,7 @@ const config: ExpoConfig = {
   },
   plugins: [
     'expo-router',
+    '@maplibre/maplibre-react-native',
     [
       'expo-splash-screen',
       {
