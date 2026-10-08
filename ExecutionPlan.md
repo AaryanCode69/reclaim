@@ -52,7 +52,7 @@ P6 is scheduled by daylight rather than by phase order. The field shoot takes pr
 **Exit:** the repo is public with its first commit dated today, and the budget alarms are active.
 
 ### C0.2 — Bedrock spike (≈1 h)
-- [ ] Enable access to a Claude vision model. Record `BEDROCK_MODEL_ID` and `BEDROCK_REGION` in CLAUDE.md §12.
+- [ ] Enable access to a vision model via Converse (Amazon Nova 2 Lite by default; Claude if access is granted). Record `BEDROCK_MODEL_ID` and `BEDROCK_REGION` in CLAUDE.md §12.
 - [ ] Write `scripts/bedrock-spike/main.go`: send 2 local JPEGs through the Converse API with a forced `submit_verdict` tool, then print the JSON.
 - [ ] Run it on one before/after pair you photograph today.
 

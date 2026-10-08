@@ -39,7 +39,7 @@ Reclaim is a mobile app for volunteer groups. A group cleans a garbage spot, pro
 | Timers | **EventBridge Scheduler**: one-time schedules for spot deadlines, and one recurring schedule for points |
 | Data | **DynamoDB**, a single table named `reclaim` |
 | Photos | **S3**, private bucket. Uploads use presigned PUT, reads use short-lived presigned GET. |
-| AI | **Amazon Bedrock Runtime Converse API** with a Claude vision model. A forced tool call returns structured JSON. |
+| AI | **Amazon Bedrock Runtime Converse API** with a vision model (**Amazon Nova 2 Lite** by default; Claude if access is granted). A forced tool call returns structured JSON. Switching models is a config change only (`BEDROCK_MODEL_ID`). |
 | Infrastructure as code | **AWS SAM** (`infra/template.yaml`). SAM is an AWS open-source tool. |
 | Region | `ap-south-1` (Mumbai). The Bedrock region and model ID come from config (`BEDROCK_REGION`, `BEDROCK_MODEL_ID`). |
 
@@ -186,10 +186,12 @@ Each member's hours run from the time they joined until the session was submitte
    - **dHash** (`github.com/corona10/goimagehash`):
      - a Hamming distance of 5 or less between after and before means `NO_CHANGE`;
      - a distance of 5 or less from any stored photo in the same geohash5 cell that belongs to a different claim means `REUSED_PHOTO`.
-3. **Bedrock Converse call.**
+3. **Bedrock Converse call** to a vision model: Amazon Nova 2 Lite by default, Claude if access is granted. The model comes only from `BEDROCK_MODEL_ID` / `BEDROCK_REGION`; see §12 for the verified values.
    - Send the three images. The client has already resized them to a long edge of 1280 px or less, as JPEG.
    - Put a text label (`BEFORE` / `AFTER` / `DISPOSAL`) before each image.
-   - Force the tool `submit_verdict` with `toolChoice`.
+   - Force the tool `submit_verdict` with `toolChoice: {tool: {name: "submit_verdict"}}`.
+   - Reasoning is **off**: Nova `reasoningConfig: {type: "disabled"}`, Claude `thinking: {type: "disabled"}`. The docs don't confirm that forced tool use works with reasoning on.
+   - `maxTokens` 1000. Temperature 0 on Nova. On Claude 5-family models, leave temperature unset (they reject sampling parameters).
    - Use a 20 s timeout, with 2 retries using jittered backoff.
 4. **`verify.Decide(verdict, cfg)`.** This is a pure, tested function that returns `APPROVE | REJECT | PEER_REVIEW | HAZARD`.
 5. Store the raw verdict JSON on the claim for audit, then apply the transition and its effects.
@@ -343,7 +345,17 @@ All values live in `backend/internal/config` and are set through SAM parameters.
 
 ## 12. Verify on Day 1 (known risks)
 
-- [ ] Bedrock model access and quota for a Claude vision model in the chosen region. Record `BEDROCK_MODEL_ID` and `BEDROCK_REGION` here.
+- [ ] Bedrock model access and quota for a vision model in the chosen region. Record `BEDROCK_MODEL_ID` and `BEDROCK_REGION` here.
+  - **Claude:** blocked. The Anthropic use-case form returns "Your account is not authorized" (account-level block; support case open, 2026-10-08).
+  - **Default: Amazon Nova 2 Lite.** `BEDROCK_REGION=ap-south-1`, `BEDROCK_MODEL_ID=global.amazon.nova-2-lite-v1:0`.
+    - ap-south-1 has no in-region or geo option for Nova 2 Lite. `get-foundation-model` reports `inferenceTypesSupported: [INFERENCE_PROFILE]`, so the bare ID `amazon.nova-2-lite-v1:0` can't be used on-demand. The only profile available from ap-south-1 is `global.` ([model card](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-amazon-nova-2-lite.html)). This means photos may be processed outside India; say so in the writeup.
+    - `toolChoice: tool` is supported and recommended for structured output, with constrained decoding ([Nova 2 tools](https://docs.aws.amazon.com/nova/latest/nova2-userguide/using-tools.html)).
+    - Reasoning is off by default. The docs don't state that forced tool choice works with reasoning on, so it stays off. `high` effort also forbids temperature/topP/maxTokens ([extended thinking](https://docs.aws.amazon.com/nova/latest/nova2-userguide/extended-thinking.html)).
+    - Images: PNG/JPEG/GIF/WebP. Inline bytes up to 25 MB and 5 images per request. Rescaled to ≥896 px on one side, max 8000×8000. Billed at a flat 230 tokens per image ([multimodal](https://docs.aws.amazon.com/nova/latest/nova2-userguide/using-multimodal-models.html)).
+    - Settings: `maxTokens` 1000, temperature 0, `reasoningConfig` disabled.
+    - IAM (P3): the Lambda will need the global-CRIS three-part policy: the inference profile in ap-south-1, the foundation model in ap-south-1, and the region-less `arn:aws:bedrock:::foundation-model/amazon.nova-2-lite-v1:0` ([global CRIS](https://docs.aws.amazon.com/bedrock/latest/userguide/global-cross-region-inference.html)).
+    - ❓ Still unverified: `get-foundation-model-availability` reports `authorizationStatus: NOT_AUTHORIZED`, and that field is undocumented. The first spike call will settle it.
+  - **If Claude access is granted:** use `in.anthropic.claude-sonnet-5` (India geo: ap-south-1 and ap-south-2). 5.5-generation Claude models reject forced `toolChoice` and are Global-only from ap-south-1.
 - [ ] The Amazon Location Maps API key and the exact style URL format. Confirm both against the current AWS docs, then record the URL here.
 - [ ] MapLibre RN builds with the Expo config plugin. **Fallback:** `react-native-maps` for rendering, keeping Amazon Location for reverse geocoding.
 - [ ] Amplify v6 React Native peer dependencies install cleanly in the dev build.
