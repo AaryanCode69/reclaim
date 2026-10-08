@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Strip AI attribution from commit messages
+sed -i -E '/^[Cc]o-[Aa]uthored-[Bb]y:/d; /Generated with \[Claude Code\]/d; /claude\.(ai|com)\/(code|claude-code)/d' "$1"
