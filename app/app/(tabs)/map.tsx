@@ -1,5 +1,4 @@
 import { Camera, Map } from '@maplibre/maplibre-react-native';
-import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { mapStyleUrl } from '@/lib/config';
@@ -8,7 +7,7 @@ import { mapStyleUrl } from '@/lib/config';
 const VELLORE: [number, number] = [79.1325, 12.9165];
 
 export default function MapScreen() {
-  const style = useMemo(mapStyleUrl, []);
+  const style = mapStyleUrl();
 
   if (!style.ok) {
     return (
