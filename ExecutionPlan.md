@@ -46,7 +46,7 @@ P6 is scheduled by daylight rather than by phase order. The field shoot takes pr
 ### C0.1 — Accounts and compliance (≈45 min)
 - [ ] Every member: WeMakeDevs registration, check in to Environmental Hacks, and **AWS Builder Center student verification** started or completed (H7).
 - [ ] AWS account in `ap-south-1`. Budget alarms at $5 and $20 (C1). Add MFA on the root account.
-- [x] Public GitHub repo `reclaim`, with `CLAUDE.md`, `Rules.md`, `ExecutionPlan.md`, `AI_USAGE.md`, `LICENSE` (MIT), `.gitignore` and `.env.example` as the first commit.
+- [ ] Public GitHub repo `reclaim`, with `CLAUDE.md`, `Rules.md`, `ExecutionPlan.md`, `AI_USAGE.md`, `LICENSE` (MIT), `.gitignore` and `.env.example` as the first commit.
 - [ ] Join the WeMakeDevs Discord and the Builder Center space.
 
 **Exit:** the repo is public with its first commit dated today, and the budget alarms are active.
