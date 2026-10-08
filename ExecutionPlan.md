@@ -59,7 +59,7 @@ P6 is scheduled by daylight rather than by phase order. The field shoot takes pr
 **Exit:** the script returns valid verdict JSON in under 15 s.
 
 ### C0.3 — Mobile spike (≈1.5 h)
-- [ ] `npx create-expo-app app` with TypeScript and `expo-router`. Add `expo-dev-client`.
+- [x] `npx create-expo-app app` with TypeScript and `expo-router`. Add `expo-dev-client`.
 - [ ] Add `@maplibre/maplibre-react-native` with its Expo config plugin. Create an Amazon Location API key restricted to Maps, and render Vellore with the Standard style.
 - [ ] `GhostCamera` prototype: a `CameraView` with a bundled sample image overlaid at 35% opacity, and a capture button.
 - [ ] Get a dev build onto a physical Android phone with `npx expo run:android`.
