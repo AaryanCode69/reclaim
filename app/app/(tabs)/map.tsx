@@ -2,6 +2,10 @@ import { Camera, Map } from '@maplibre/maplibre-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { mapStyleUrl } from '@/lib/config';
+import { configureMapRequests } from '@/lib/mapRequests';
+
+// Must run before the first tile request.
+configureMapRequests();
 
 // Vellore, Tamil Nadu: pilot area (CLAUDE.md §1).
 const VELLORE: [number, number] = [79.1325, 12.9165];
